@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://unpkg.com/vue@2.5.2"></script>
+    <script type="text/javascript" src="/homey.js" data-origin="settings"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.4.4/css/bulma.min.css" integrity="sha256-cqlVHMFcSR4diUVzW7ot+yIE0EHW0jfNvRG9GVEt8pE=" crossorigin="anonymous"/>
+  </head>
+  <body style="overflow-x:hidden;">
+    <div id="app" style="margin-left:15px;margin-right:20px;">
+
+      <div class="tabs is-centered" style="margin-left:-10px;">
+        <ul>
+          <li v-bind:class="isActive('users')">
+            <a @click="setPage('users')" data-i18n="tabs.users">Users</a>
+          </li>
+          <li v-bind:class="isActive('code')">
+            <a @click="setPage('code')" data-i18n="tabs.code">Accessory Code</a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- USERS PAGE -->
+      <div class="columns is-multiline" v-if="currentPage == 'users'">
+        <div class="column is-3" v-for="user in users">
+          <div class="box">
+            <center>
+              <img :src="user.avatar" style="height:40px;width:auto;border-radius:20px"/><br/>
+              <b>{{ user.name }}</b><br/>
+              <small>{{ user.role }} | {{ user.email }}</small><br/>
+              <a v-if="!isTracked(user)" @click="trackUser(user)" class="button is-success is-outlined " style="margin:5px;" data-i18n="user.track">Track</a>
+              <a v-if=" isTracked(user)" @click="unTrackUser(user)" class="button is-outlined is-danger" style="margin:5px;" data-i18n="user.untrack">Untrack</a>
+            </center>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function onHomeyReady(Homey) {
+      Homey.ready();
+      new Vue({
+        el: '#app',
+        data: {
+          users: [],
+          usersTracked: [],
+          currentPage: 'users',
+        },
+        methods: {
+          getUsers() {
+            Homey.api('GET', '/users', null, (err, result) => {
+              if (err) {
+                return Homey.alert(err);
+              }
+              this.users = result || [];
+            });
+          },
+          getTrackedUsers() {
+            Homey.get('trackedUsers', (err, result) => {
+              if (result) {
+                this.usersTracked = result;
+              }
+            });
+          },
+          setPage(page) {
+            this.currentPage = page;
+          },
+          isActive(page) {
+            if (this.currentPage == page) {
+              return 'is-active';
+            } else {
+              return;
+            }
+          },
+          trackUser(user) {
+            Homey.api('PUT', '/users', user, (err, result) => {
+              if (err) {
+                return Homey.alert(err);
+              }
+              console.log('Tracking', user.name);
+              this.usersTracked.push(user);
+              Homey.set('trackedUsers', this.usersTracked);
+            });
+          },
+          unTrackUser(user) {
+            Homey.api('DELETE', '/users', user, (err, result) => {
+              if (err) {
+                return Homey.alert(err);
+              }
+              console.log('Untracking', user.name);
+              let idx = this.usersTracked.findIndex(u => u.id === user.id);
+              if (idx !== -1) {
+                this.usersTracked.splice(idx, 1);
+                Homey.set('trackedUsers', this.usersTracked);
+              }
+            });
+          },
+          isTracked(obj) {
+            return this.usersTracked.find(user => user.id === obj.id) ? true : false;
+          },
+        },
+        mounted() {
+          this.getTrackedUsers();
+          this.getUsers();
+        },
+      })
+    }
+  </script>
+</body>
+</html>

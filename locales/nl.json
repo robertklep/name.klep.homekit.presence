@@ -1,0 +1,10 @@
+{
+  "tabs" : {
+    "users" : "Gebruikers",
+    "code"  : "Accessoire Code"
+  },
+  "user" : {
+    "track" : "Volg",
+    "untrack" : "Ontvolg"
+  }
+}

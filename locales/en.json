@@ -1,0 +1,10 @@
+{
+  "tabs" : {
+    "users" : "Users",
+    "code"  : "Accessory Code"
+  },
+  "user" : {
+    "track" : "Track",
+    "untrack" : "Untrack"
+  }
+}
