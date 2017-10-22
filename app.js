@@ -1,6 +1,6 @@
 const Homey               = require('homey');
 const HAS                 = require('has-node');
-const { HomeyAPI }        = require('./lib/athom-api')
+const { HomeyAPI }        = require('athom-api');
 const { PresenceManager } = require('./lib/presence-manager');
 
 const DEBUG = true;
